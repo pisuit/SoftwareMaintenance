@@ -1,0 +1,16 @@
+@CHARSET "TIS-620";
+
+.ui-widget,.ui-widget .ui-widget {
+	font-size: 90% !important;
+}
+
+.ui-layout-container {
+	width: 1000px !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.ui-layout-unit .ui-layout-unit-content {
+	padding-bottom: 0px !important;
+	padding-top: 0px !important;
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<h:head>
+	<style>
+.justNoBorder tr,.justNoBorder td {
+	border: none;
+}
+
+.column-center-align {
+	text-align: center;
+}
+</style>
+
+</h:head>
+<body>
+	<h:outputStylesheet library="css" name="global.css" />
+	<!--  <ui:composition template="mainlayout.xhtml">
+		<ui:define name="content">
+			<p:dialog header="Aerothai IT Service System" appendToBody="true"
+				modal="true" closable="false" resizable="false" draggable="false"
+				visible="true" showEffect="fade" hideEffect="fade">
+				<p:panelGrid columns="1" styleClass="justNoBorder"
+					columnClasses="column-center-align" style="width:100%">
+					<p:watermark value="Username" for="user" />
+					<p:watermark value="Password" for="pass" />
+					<p:inputText style="width:200px" id="user" />
+					<p:password style="width:200px" id="pass" />
+				</p:panelGrid>
+				<p:spacer height="10" />
+				<h:panelGroup layout="block" style="width:100%;text-align:center">
+					<p:commandButton value="Log In" style="width:210px"
+						icon="ui-icon-power" iconPos="right" />
+				</h:panelGroup>
+			</p:dialog>
+		</ui:define>
+	</ui:composition>-->
+	<pe:blockUI widgetVar="blockUI" target="logindialog">
+		<h:panelGrid columns="2">
+			<p:graphicImage library="image" name="loading.gif"
+				style="width:50px;height:50px" />
+			<h:outputText value="Logging In...." style="font-size:25px" />
+		</h:panelGrid>
+	</pe:blockUI>
+	<p:dialog header="Aerothai IT Service System" appendToBody="true"
+		modal="true" closable="false" resizable="false" draggable="false"
+		visible="true" showEffect="fade" hideEffect="fade" id="logindialog">
+		<h:form id="loginform">
+			<p:messages autoUpdate="true" closable="true" />
+			<p:panelGrid columns="1" styleClass="justNoBorder"
+				columnClasses="column-center-align" style="width:100%"
+				id="logingrid">
+				<p:watermark value="Username" for="user" />
+				<p:watermark value="Password" for="pass" />
+				<p:inputText style="width:200px" id="user"
+					value="#{loginManager.username}" />
+				<p:password style="width:200px" id="pass"
+					value="#{loginManager.password}" />
+			</p:panelGrid>
+			<p:spacer height="10" />
+			<h:panelGroup layout="block" style="width:100%;text-align:center">
+				<p:commandButton value="Log In" style="width:210px"
+					icon="ui-icon-power" iconPos="right"
+					action="#{loginManager.login()}" process="@this, logingrid"
+					partialSubmit="true" id="loginbutton" onstart="blockUI.block()"
+					oncomplete="blockUI.unblock()" />
+			</h:panelGroup>
+			<p:hotkey bind="alt+z"
+				action="#{loginManager.quickLogin('pisuityo','term13773')}" />
+			<p:hotkey bind="alt+l" handler="secretDialog.show()" />
+		</h:form>
+	</p:dialog>
+	<p:dialog header="This is blackhole !!" widgetVar="secretDialog">
+		<h:form>
+			<p:autoComplete value="#{loginManager.staff}"
+				completeMethod="#{empAutoComplete.employeeCompleteMethod()}"
+				process="@this" var="emp" itemValue="#{emp}" itemLabel="#{emp}"
+				converter="employeeConverter" forceSelection="true"
+				scrollHeight="210" minQueryLength="3" size="50">
+				<p:ajax event="itemSelect" listener="#{loginManager.secretLogin}" />
+				<p:column>
+					<h:graphicImage value="/photo/#{emp.STAFFCODE}" width="50"
+						height="60" />
+				</p:column>
+				<p:column style="font-weight:bold;font-size:90%">
+					<h:outputText value="ชื่อ: #{emp}" />
+					<br />
+					<h:outputText
+						value="สังกัด: #{emp.employeeAsList.get(0).DEPFINANCE}" />
+				</p:column>
+			</p:autoComplete>
+
+		</h:form>
+	</p:dialog>
+</body>
+</html>

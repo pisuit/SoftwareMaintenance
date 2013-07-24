@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+		"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+<!-- 		<property name="hibernate.session_factory_name">java:/hibernate/session_factory</property> -->
+<!-- 		<property name="hibernate.connection.datasource">java:jdbc/OracleDB/qas/itservice</property> -->
+<!-- 		<property name="hibernate.transaction.factory_class">org.hibernate.transaction.JTATransactionFactory</property> -->
+<!-- 		<property name="jta.UserTransaction">UserTransaction</property> -->
+<!-- 		<property name="hibernate.transaction.manager_lookup_class">org.hibernate.transaction.JBossTransactionManagerLookup</property> -->
+<!-- 		<property name="connection.charSet">tis620</property> -->
+<!-- 		<property name="dialect">org.hibernate.dialect.Oracle10gDialect</property> -->
+<!-- 		<property name="current_session_context_class">jta</property> -->
+<!-- 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property> -->
+
+		<property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+		<!-- <property name="hibernate.connection.driver_class">com.p6spy.engine.spy.P6SpyDriver</property> -->
+		<property name="hibernate.connection.url">jdbc:oracle:thin:@172.16.72.137:1521:xe</property>
+<!-- 		<property name="hibernate.connection.url">jdbc:oracle:thin:@172.16.129.13:1521:ONLINE1</property> -->
+		<property name="hibernate.connection.username">itservice</property>
+		<property name="hibernate.connection.password">itservice</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
+
+		<!-- <property name="hibernate.show_sql">true</property> -->
+		<!-- <property name="hibernate.format_sql">true</property> -->
+		<!-- <property name="use_sql_comments">true</property> -->
+
+		<mapping class="th.co.aerothai.callservice.model.CallServiceComment" />
+		<mapping class="th.co.aerothai.callservice.model.ProjectManagerComment" />
+		<mapping class="th.co.aerothai.callservice.model.Job" />
+		<mapping class="th.co.aerothai.callservice.model.OperatorComment" />
+		<mapping class="th.co.aerothai.callservice.model.ProviderDirectorComment" />
+		<mapping class="th.co.aerothai.callservice.model.Request" />
+		<mapping class="th.co.aerothai.callservice.model.ServiceType" />
+		<mapping class="th.co.aerothai.callservice.model.System" />
+		<mapping class="th.co.aerothai.callservice.model.UserDirectorComment" />
+		<mapping class="th.co.aerothai.callservice.model.WorkPlace" />
+		<mapping class="th.co.aerothai.callservice.model.CallServiceJob" />
+		<mapping class="th.co.aerothai.callservice.model.SystemUser" />
+		<mapping class="th.co.aerothai.callservice.model.Authorization" />
+		<mapping class="th.co.aerothai.callservice.model.InspectorComment" />
+		<mapping class="th.co.aerothai.callservice.model.RequestLog" />
+		<mapping class="th.co.aerothai.callservice.model.Attachment" />
+		<mapping class="th.co.aerothai.callservice.model.AssignedOperator" />
+
+
+		<mapping class="th.co.aerothai.callservice.model.hr.Department" />
+		<mapping class="th.co.aerothai.callservice.model.hr.EmployeeInfo" />
+		<mapping class="th.co.aerothai.callservice.model.hr.PersonalInfo" />
+		<mapping class="th.co.aerothai.callservice.model.hr.Photo" />
+	</session-factory>
+</hibernate-configuration>

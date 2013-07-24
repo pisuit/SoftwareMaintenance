@@ -1,0 +1,819 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<h:head>
+
+</h:head>
+<body>
+	<ui:composition template="mainlayout.xhtml">
+		<ui:define name="content">
+			<h:form>
+				<p:poll process="@this" update=":tableform:requestlist, :menuform"
+					partialSubmit="true"
+					listener="#{userDirectorManager.createRequestList()}"
+					interval="600" />
+			</h:form>
+			<h:form id="tableform">
+				<p:dataTable value="#{userDirectorManager.requestList}" var="req"
+					id="requestlist" paginator="true" rows="10"
+					paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+					rowsPerPageTemplate="5,10,15,20" widgetVar="requesttable"
+					filteredValue="#{userDirectorManager.filtered}"
+					styleClass="custom-filter"
+					currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+					<p:column filterMatchMode="contains" filterBy="#{req.title}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterMatchMode="contains"
+						filterBy="#{req.requestNumber}" filterStyle="display:none"
+						style="display:none" />
+					<p:column filterMatchMode="contains" filterBy="#{req.systemName}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterMatchMode="contains" filterBy="#{req.requester}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterBy="#{req.status}" filterMatchMode="exact"
+						filterOptions="#{userDirectorManager.filterOptions}">
+						<f:facet name="header">
+							<h:panelGroup layout="block">
+								<div style="float: left">
+									<h:outputText value="Search" />
+									<p:watermark value="Title, Number, System, Requester"
+										for="globalFilter" />
+									<p:inputText id="globalFilter" onkeyup="requesttable.filter()"
+										style="width:200px;margin:3px 0 0 6px" />
+									<h:outputText value="Group by" style="margin-left:20px" />
+								</div>
+							</h:panelGroup>
+						</f:facet>
+						<pe:tooltip value="#{req.title}" for="title"
+							atPosition="top center" myPosition="bottom center" />
+						<pe:tooltip value="#{req.systemName}" for="system"
+							atPosition="top center" myPosition="bottom center" />
+						<pe:tooltip for="progressbar" atPosition="top center"
+							myPosition="bottom center">
+							<h:panelGrid columns="2">
+								<h:outputText value="State: " style="float:right" />
+								<h:outputText value="#{req.stateType.value}" />
+								<h:outputText value="Next Role: " style="float:right" />
+								<h:outputText value="#{req.nextRole}" />
+								<h:outputText value="Action: " style="float:right" />
+								<h:outputText value="#{req.nextAction}" />
+							</h:panelGrid>
+						</pe:tooltip>
+						<div class="rowclass">
+							<p:spacer height="5" />
+							<div style="height: 35px">
+								<div style="float: left; color: #306DA1" class="ellipsis-title">
+									<h:outputText value="#{req.status}"
+										styleClass="status-#{req.status}" />
+									<h:outputText value="#{req.title}"
+										style="font-weight:bold;font-size:18px;margin: 0 0 0 10px;"
+										id="title" />
+								</div>
+								<div style="display: none; float: left; margin: 4px 0 0 20px;"
+									class="linka">
+									<p:commandLink styleClass="ui-icon ui-icon-search"
+										title="View Details"
+										style="display:inline-block;margin-right:5px"
+										oncomplete="detailDialog.show()" update=":detaildialog"
+										process="@this" partialSubmit="true">
+										<f:setPropertyActionListener
+											target="#{userDirectorManager.viewRequest}" value="#{req}" />
+									</p:commandLink>
+									<p:commandLink styleClass="ui-icon ui-icon-check"
+										title="Approve" style="display:inline-block;margin-right:5px"
+										process="@this" partialSubmit="true"
+										oncomplete="approveDialog.show()" update=":approvedialog"
+										action="#{userDirectorManager.setData()}"
+										rendered="#{req.callServiceComment == null and (req.userDirectorComment != null and req.userDirectorComment.approvalType != 'APPROVED') || req.userDirectorComment == null}">
+										<f:setPropertyActionListener
+											target="#{userDirectorManager.editRequest}" value="#{req}" />
+									</p:commandLink>
+									<p:commandLink styleClass="ui-icon ui-icon-close"
+										title="Decline" style="display:inline-block;" process="@this"
+										partialSubmit="true" oncomplete="declineDialog.show()"
+										update=":declinedialog"
+										action="#{userDirectorManager.setData()}"
+										rendered="#{req.callServiceComment == null and (req.userDirectorComment != null and req.userDirectorComment.approvalType != 'DECLINED') || req.userDirectorComment == null}">
+										<f:setPropertyActionListener
+											target="#{userDirectorManager.editRequest}" value="#{req}" />
+									</p:commandLink>
+								</div>
+								<div style="float: right; color: #999; margin: 6px 0 0;">
+									<h:outputText value="by " />
+									<h:outputText value="#{req.requester}" style="font-weight:bold" />
+									<h:outputText value=" on " />
+									<h:outputText value="#{req.issueDate}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</div>
+							</div>
+							<p:panelGrid styleClass="transparentPanelGrid" id="grid">
+								<p:row>
+									<p:column
+										style="text-align:center;width:100px;border-left-color: transparent;border-bottom-color: transparent;">
+										<h:outputText value="Number"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.requestNumber}" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;">
+										<h:outputText value="Use Date"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.useDate}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column
+										style="text-align:center;width:150px;border-bottom-color: transparent;"
+										styleClass="ellipsis-system">
+										<h:outputText value="System"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.systemName}" id="system" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;">
+										<h:outputText value="Issue Type"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.issueType.value}" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;border-right-color: transparent;">
+										<div style="margin-bottom: 15px">
+											<h:outputText value="Progress"
+												style="font-weight:bold;color: #999" />
+											<br />
+											<p:progressBar value="#{req.progress}"
+												labelTemplate="{value}%" displayOnly="true"
+												style="position: absolute;width: 165px;height:12px;margin-top:1px"
+												id="progressbar" />
+										</div>
+									</p:column>
+								</p:row>
+							</p:panelGrid>
+							<p:spacer height="10" />
+						</div>
+					</p:column>
+				</p:dataTable>
+			</h:form>
+			<p:dialog widgetVar="detailDialog"
+				height="#{menuManager.screenHeight lt 1000 ? '500':'700'}"
+				showEffect="clip" hideEffect="clip" resizable="false" modal="true"
+				appendToBody="true" id="detaildialog">
+				<f:facet name="header">
+					<h:outputText
+						value="Request ##{userDirectorManager.viewRequest.requestNumber}" />
+					<h:panelGroup layout="block"
+						style="position:absolute;right:50px;top:23px"
+						rendered="#{userDirectorManager.viewRequest.rating gt 0}">
+						<h:outputText value="User Rating"
+							style="font-size:15px;margin-right: 10px" />
+						<p:rating readonly="true"
+							value="#{userDirectorManager.viewRequest.rating}"
+							style="display:inline-block;margin-bottom:-2px" />
+					</h:panelGroup>
+				</f:facet>
+				<p:tabView id="detailtab" style="font-size:110% !important">
+					<p:tab title="Details" titleStyle="font-size:80% !important">
+						<p:panel header="Request">
+							<p:fieldset legend="Header">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Number" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.requestNumber}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Title" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.title}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Ref. Document" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.referenceDocument}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Use Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.useDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.issueType.value}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Requester" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.requester}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Department" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.requester.employee.DEPFINANCE}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Phone" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.phoneNumber}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Details">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="System" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.systemName}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column
+											style="width:150px;text-align:right;vertical-align:text-top">
+											<h:outputText value="Purpose" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.purpose}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column
+											style="width:150px;text-align:right;vertical-align:text-top">
+											<h:outputText value="Description" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.description}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Budget">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Use Budget" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="Yes"
+												rendered="#{userDirectorManager.viewRequest.budget}"
+												style="color:green" />
+											<h:outputText value="No"
+												rendered="#{!userDirectorManager.viewRequest.budget}"
+												style="color:red" />
+										</p:column>
+									</p:row>
+									<p:row rendered="#{userDirectorManager.viewRequest.budget}">
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Budget Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.budgetType.value}" />
+										</p:column>
+									</p:row>
+									<p:row rendered="#{userDirectorManager.viewRequest.budget}">
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Amount" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.budgetUse}">
+												<f:convertNumber pattern="#,###" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Attachments"
+								rendered="#{fn:length(userDirectorManager.viewRequest.attachments) != 0}">
+								<h:form>
+									<h:panelGroup style="font-size:105% !important" layout="block">
+										<p:dataList
+											value="#{userDirectorManager.viewRequest.attachmentList}"
+											var="file" itemType="none">
+											<div style="width: 100%; height: 20px;" class="download">
+												<h:graphicImage library="image" name="pdf.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{fn:containsIgnoreCase(file.physicalName, '.pdf')}" />
+												<h:graphicImage library="image" name="doc.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.doc') || fn:containsIgnoreCase(file.physicalName, '.docx'))}" />
+												<h:graphicImage library="image" name="ppt.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.ppt') || fn:containsIgnoreCase(file.physicalName, '.pptx'))}" />
+												<h:graphicImage library="image" name="xls.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.xls') || fn:containsIgnoreCase(file.physicalName, '.xlsx'))}" />
+												<h:graphicImage library="image" name="img.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.jpg') || fn:containsIgnoreCase(file.physicalName, '.tiff') || fn:containsIgnoreCase(file.physicalName, '.gif') || fn:containsIgnoreCase(file.physicalName, '.bmp') || fn:containsIgnoreCase(file.physicalName, '.png'))}" />
+												<h:graphicImage library="image" name="text.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{!fn:containsIgnoreCase(file.physicalName, '.pdf') and !fn:containsIgnoreCase(file.physicalName, '.doc') and !fn:containsIgnoreCase(file.physicalName, '.docx') and !fn:containsIgnoreCase(file.physicalName, '.xls') and !fn:containsIgnoreCase(file.physicalName, '.xlsx') and !fn:containsIgnoreCase(file.physicalName, '.ppt') and !fn:containsIgnoreCase(file.physicalName, '.pptx') and !fn:containsIgnoreCase(file.physicalName, '.jpg') and !fn:containsIgnoreCase(file.physicalName, '.tiff') and !fn:containsIgnoreCase(file.physicalName, '.gif') and !fn:containsIgnoreCase(file.physicalName, '.bmp') and !fn:containsIgnoreCase(file.physicalName, '.png')}" />
+												<p:commandLink action="#{download.download(file)}"
+													value="#{file.physicalName}" process="@this"
+													style="text-decoration:none" ajax="false" />
+											</div>
+										</p:dataList>
+									</h:panelGroup>
+								</h:form>
+							</p:fieldset>
+						</p:panel>
+						<p:spacer height="15" />
+						<p:panel header="Approval"
+							rendered="#{userDirectorManager.viewRequest.userDirectorComment != null or userDirectorManager.viewRequest.providerDirectorComment != null or userDirectorManager.viewRequest.inspectorComment != null}">
+							<p:fieldset legend="User Director"
+								rendered="#{userDirectorManager.viewRequest.userDirectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important"
+									rendered="#{userDirectorManager.viewRequest.userDirectorComment != null}">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approver" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.userDirectorComment.director}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.userDirectorComment.approvalType.value}"
+												style="color:#{userDirectorManager.viewRequest.userDirectorComment.approvalType == 'APPROVED' ? 'green':userDirectorManager.viewRequest.userDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.userDirectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.userDirectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15"
+								rendered="#{userDirectorManager.viewRequest.providerDirectorComment != null}" />
+							<p:fieldset legend="Provider Director"
+								rendered="#{userDirectorManager.viewRequest.providerDirectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approver" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.providerDirectorComment.director}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.providerDirectorComment.approvalType.value}"
+												style="color:#{userDirectorManager.viewRequest.providerDirectorComment.approvalType == 'APPROVED' ? 'green':userDirectorManager.viewRequest.providerDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.providerDirectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.providerDirectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15"
+								rendered="#{userDirectorManager.viewRequest.inspectorComment != null}" />
+							<p:fieldset legend="Inspector"
+								rendered="#{userDirectorManager.viewRequest.inspectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Inspector" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.inspectorComment.inspector}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.inspectorComment.approvalType.value}"
+												style="color:#{userDirectorManager.viewRequest.providerDirectorComment.approvalType == 'APPROVED' ? 'green':userDirectorManager.viewRequest.providerDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.inspectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.inspectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+						</p:panel>
+						<p:spacer height="15" />
+						<p:panel header="Operational"
+							rendered="#{userDirectorManager.viewRequest.callServiceComment != null or userDirectorManager.viewRequest.projectManagerComment != null or userDirectorManager.viewRequest.operatorComment != null}">
+							<p:fieldset legend="Call Service"
+								rendered="#{userDirectorManager.viewRequest.callServiceComment != null}">
+								<p:panelGrid style="font-size:100% !important"
+									rendered="#{userDirectorManager.viewRequest.callServiceComment != null}"
+									styleClass="panelgridPadding">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Call Service" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.serviceOfficer}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Coordinator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.coordinator}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Phone" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.phoneNumber}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Jobs" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.jobsAsString}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Work Place" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.workPlace.name}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.callServiceComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15" />
+							<p:fieldset legend="Project Manager"
+								rendered="#{userDirectorManager.viewRequest.projectManagerComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important"
+									rendered="#{userDirectorManager.viewRequest.projectManagerComment != null}">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Project Manager" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.manager}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.operatorAsString}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Project Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.projectType.value}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operation Time" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.startDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+											<h:outputText value=" - " />
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.endDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+											<h:outputText value=" (" />
+											<h:outputText
+												value="#{((userDirectorManager.viewRequest.projectManagerComment.endDate.time - userDirectorManager.viewRequest.projectManagerComment.startDate.time)/86400000)+1}">
+												<f:convertNumber pattern="#,###" />
+											</h:outputText>
+											<h:outputText
+												value=" #{((userDirectorManager.viewRequest.projectManagerComment.endDate.time - userDirectorManager.viewRequest.projectManagerComment.startDate.time)/86400000)+1 gt 1 ? 'Days':'Day'})" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.projectManagerComment.commentBefore}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15" />
+							<p:fieldset legend="Operator"
+								rendered="#{userDirectorManager.viewRequest.operatorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.operatorComment.operator}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.operatorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operation Detail" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.operatorComment.remark}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Problems / Obstacles" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{userDirectorManager.viewRequest.operatorComment.problems}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+						</p:panel>
+					</p:tab>
+					<p:tab title="Logs" titleStyle="font-size:80% !important">
+						<h:panelGroup layout="block" style="font-size:90% !important">
+							<p:dataTable value="#{userDirectorManager.viewRequest.logList}"
+								var="logs" style="width:686px" rows="10"
+								paginatorPosition="bottom" paginator="true"
+								paginatorAlwaysVisible="false"
+								paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+								rowsPerPageTemplate="5,10,15,20"
+								currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+								<p:column headerText="Actor">
+									<h:outputText value="#{logs.actor}" />
+								</p:column>
+								<p:column headerText="Role">
+									<h:outputText value="#{logs.role.value}" />
+								</p:column>
+								<p:column headerText="Description">
+									<h:outputText value="#{logs.description}" />
+								</p:column>
+								<p:column headerText="Issue Time">
+									<h:outputText value="#{logs.issueTime}">
+										<f:convertDateTime pattern="dd/MM/yyyy hh:mm" timeZone="GMT+7" />
+									</h:outputText>
+								</p:column>
+							</p:dataTable>
+						</h:panelGroup>
+					</p:tab>
+				</p:tabView>
+			</p:dialog>
+			<p:dialog widgetVar="approveDialog" header="Approve" modal="true"
+				showEffect="clip" hideEffect="clip" resizable="false"
+				id="approvedialog" appendToBody="true">
+				<h:form id="approveform">
+					<p:panelGrid styleClass="panelgridNoBorder" id="approvegrid">
+						<p:row>
+							<p:column style="vertical-align:text-top">
+								<h:outputText value="Remark" />
+							</p:column>
+							<p:column>
+								<p:inputTextarea
+									value="#{userDirectorManager.editDirectorComment.remark}"
+									style="width:500px" rows="6" autoResize="false" />
+							</p:column>
+						</p:row>
+					</p:panelGrid>
+					<p:separator />
+					<h:panelGroup layout="block" style="width:100%">
+						<center>
+							<p:commandButton value="Submit" icon="ui-icon-disk"
+								action="#{userDirectorManager.approve(true)}"
+								oncomplete="approveDialog.hide()" process="@this, approvegrid"
+								partialSubmit="true"
+								update=":tableform:requestlist, approvegrid, :menuform" />
+						</center>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+			<p:dialog widgetVar="declineDialog" header="Decline" modal="true"
+				showEffect="clip" hideEffect="clip" resizable="false"
+				appendToBody="true" id="declinedialog">
+				<h:form id="declineform">
+					<p:panelGrid styleClass="panelgridNoBorder" id="rejectgrid">
+						<p:row>
+							<p:column style="vertical-align:text-top">
+								<h:outputText value="Remark" />
+							</p:column>
+							<p:column>
+								<p:inputTextarea
+									value="#{userDirectorManager.editDirectorComment.remark}"
+									style="width:500px" rows="6" autoResize="false" />
+							</p:column>
+						</p:row>
+					</p:panelGrid>
+					<p:separator />
+					<h:panelGroup layout="block" style="width:100%">
+						<center>
+							<p:commandButton value="Submit" icon="ui-icon-disk"
+								action="#{userDirectorManager.approve(false)}"
+								oncomplete="declineDialog.hide()" process="@this, rejectgrid"
+								partialSubmit="true" update=":tableform:requestlist, rejectgrid ,:menuform" />
+						</center>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+		</ui:define>
+	</ui:composition>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<h:head>
+	<style type="text/css">
+.panelgridNoBorder tr,.panelgridNoBorder td {
+	border: none;
+	padding-top: 7px;
+	padding-bottom: 7px;
+	padding-right: 7px;
+	padding-left: 7px;
+}
+
+.panelgridPadding tr,.panelgridPadding td {
+	border: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-right: 5px;
+	padding-left: 5px;
+	padding-top: 5px;
+}
+
+.justNoBorder tr,.justNoBorder td {
+	border: none;
+}
+
+.column-center-align {
+	text-align: center;
+}
+
+.transparentPanelGrid tr {
+	background-color: transparent;
+}
+
+.layout-overflow-hidden .ui-layout-unit-content {
+	overflow: hidden;
+}
+
+.status-NEW {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #55b449;
+	color: #FFF;
+}
+
+.status-DECLINED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #C13D2C;
+	color: #FFF;
+}
+
+.status-REJECTED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #C13D2C;
+	color: #FFF;
+}
+
+.status-PENDING {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #E4AC10;
+	color: #FFF;
+}
+
+.status-WAITING {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #E4AC10;
+	color: #FFF;
+}
+
+.status-APPROVED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #3A6DA1;
+	color: #FFF;
+}
+
+.status-ACCEPTED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #3A6DA1;
+	color: #FFF;
+}
+
+.status-DONE {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #3A6DA1;
+	color: #FFF;
+}
+
+.status-COMPLETED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #3A6DA1;
+	color: #FFF;
+}
+
+.status-CLOSED {
+	width: 75px;
+	padding: 5px 15px 4px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	min-width: 50px;
+	display: inline-block;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: normal;
+	background: #DDD;
+	color: #999;
+}
+
+.ui-datatable tr.ui-datatable-even:hover,.ui-datatable tr.ui-datatable-odd:hover
+	{
+	background: rgb(230, 230, 230);
+	/* RGBa with 0.6 opacity */
+	background: rgba(230, 230, 230, 0.5);
+	/* For IE 5.5 - 7*/
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#E6E6E6,
+		endColorstr=#E6E6E6 );
+	/* For IE 8*/
+	-ms-filter:
+		"progid:DXImageTransform.Microsoft.gradient(startColorstr=#E6E6E6, endColorstr=#E6E6E6)";
+}
+
+.ui-widget-overlay {
+	position: fixed;
+	width: 100%;
+}
+
+.custom-filter .ui-column-filter {
+	position: absolute;
+	left: 355px;
+	top: 9px;
+	height: 24px;
+}
+
+a>img {
+	border: 0;
+}
+
+.ui-datalist-item {
+	padding-bottom: 3px;
+	font-size: 110% !important;
+}
+
+.download:hover {
+	background: rgb(230, 230, 230);
+	/* RGBa with 0.6 opacity */
+	background: rgba(230, 230, 230, 0.5);
+}
+
+.logout {
+	-webkit-transition: opacity 0.3s ease-in-out;
+	-moz-transition: opacity 0.3s ease-in-out;
+	-o-transition: opacity 0.3s ease-in-out;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.logout:hover {
+	opacity: 0.5;
+	filter: alpha(opacity =                  
+		                                                         
+		                    50);
+}
+
+.ui-clock,.ui-widget .ui-widget-header {
+	background: none;
+	border: none;
+	color: #306DA1;
+	padding: 0px
+}
+
+.ui-layout-north {
+	z-index: 20 !important;
+	overflow: visible !important;;
+}
+
+.ui-layout-north .ui-layout-unit-content {
+	overflow: visible !important;
+}
+
+#profile:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.ui-autocomplete-panel {
+	position: fixed;
+	left: 0px;
+}
+
+.ellipsis-title {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+	max-width: 550px;
+}
+
+.ellipsis-system {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+	max-width: 100px;
+}
+
+.ui-tooltip {
+	max-width: 500px;
+}
+
+.ui-tooltip-content {
+	line-height: 17px;
+}
+
+.ui-tooltip-rounded .ui-tooltip-content {
+	color: white;
+	background-color: black;
+	opacity: 0.8;
+}
+
+.ui-selectonemenu-panel .ui-selectonemenu-filter {
+	width: 230px;
+}
+
+.ui-progressbar-value {
+	height: 12px !important;
+}
+
+.ui-fieldset-legend {
+	cursor: default !important;
+}
+
+</style>
+
+	<script>
+
+jQuery(document).ready(function(){
+	jQuery("div.rowclass").live('mouseover', function(){
+		jQuery(this).find("div.linka").show();
+	});
+
+	jQuery("div.rowclass").live('mouseout', function(){
+		jQuery(this).find("div.linka").hide();
+	});
+
+	command([{name:'height',value:window.screen.height}]);
+});
+
+function myScroll(){
+	$('.ui-dialog-content').stop().animate({
+        scrollTop: $(".scrolltoclass").offset().top
+    }, 2000);
+}
+
+function showRequestDialog(){
+	newRequestDialog.show(); 
+	document.getElementById("content_layout").style.zIndex= "";
+}
+</script>
+
+</h:head>
+<body>
+	<h:form>
+		<p:remoteCommand name="command" action="#{menuManager.setHeight()}" />
+	</h:form>
+	<h:outputStylesheet library="css" name="global.css" />
+	<p:growl autoUpdate="true" showDetail="true" life="10000" />
+	<p:layout id="main_layout" fullPage="true">
+		<p:layoutUnit id="top_layout" position="north" size="120"
+			styleClass="layout-overflow-hidden">
+			<p:overlayPanel id="repoverlay" for="profile" showEffect="blind"
+				hideEffect="blind" showEvent="mousedown" hideEvent="mousedown"
+				my="right top" at="right bottom">
+				<h:form >
+					<h:panelGrid columns="1">
+						<h:outputText value="Representative" />
+						<p:autoComplete value="#{menuManager.selectedStaff}"
+							completeMethod="#{empAutoComplete.employeeCompleteMethod()}"
+							process="@this" var="emp" itemValue="#{emp}" itemLabel="#{emp}"
+							converter="employeeConverter" scrollHeight="210"
+							minQueryLength="3" size="50" id="autocom">
+							<p:ajax event="itemSelect" listener="#{menuManager.saveRep()}"
+								update="replist, autocom" />
+							<p:column>
+								<h:graphicImage value="/photo/#{emp.STAFFCODE}" width="50"
+									height="60" />
+							</p:column>
+							<p:column style="font-weight:bold;font-size:90%">
+								<h:outputText value="ชื่อ: #{emp}" />
+								<br />
+								<h:outputText
+									value="สังกัด: #{emp.employeeAsList.get(0).DEPFINANCE}" />
+							</p:column>
+						</p:autoComplete>
+					</h:panelGrid>
+					<p:spacer height="10" />
+					<p:dataTable value="#{menuManager.repList}" id="replist" var="rep">
+						<p:column headerText="Active" style="width:10px;text-align:center">
+							<p:selectBooleanCheckbox value="#{rep.active}">
+								<p:ajax listener="#{menuManager.updateRep(rep)}" />
+							</p:selectBooleanCheckbox>
+						</p:column>
+						<p:column headerText="Name">
+							<h:outputText value="#{rep.staff}" />
+							<p:commandButton icon="ui-icon-trash"
+								style="height:16px;width:16px;position:absolute;right:20px"
+								action="#{menuManager.deleteRep(rep)}" update="replist"
+								title="Delete" />
+						</p:column>
+					</p:dataTable>
+				</h:form>
+			</p:overlayPanel>
+			<p:graphicImage library="image" name="logo3.png"
+				style="position:absolute;margin-left:10px;margin-top:25px" />
+			<p:spacer height="74" />
+			<div
+				style="position: absolute; right: 8px; bottom: 10px; color: #306DA1; z-index: 9">
+				<h:outputText value="Logged In as " />
+				<h:outputText value="#{userSession.staff}"
+					style="font-weight:bold;margin-right:8px" id="profile"
+					rendered="#{(menuManager.userDirector or menuManager.providerDirector) and userSession.boss == null}" />
+				<h:outputText value="#{userSession.staff}"
+					style="font-weight:bold;margin-right:8px"
+					rendered="#{(!menuManager.userDirector and !menuManager.providerDirector) or userSession.boss != null}" />
+				<p:commandLink style="position:relative;top:9px"
+					rendered="#{menuManager.loggedIn}"
+					action="#{loginManager.logout()}" process="@this"
+					partialSubmit="true" styleClass="logout" title="Logout">
+					<p:graphicImage library="image" name="logout.png" />
+				</p:commandLink>
+			</div>
+			<div
+				style="position: absolute; right: 8px; top: 47px; color: #306DA1;">
+				<p:clock pattern="EEE, dd MMM yyyy hh:mm:ss" mode="server"
+					autoSync="false" />
+			</div>
+			<ui:include src="menu.xhtml" />
+		</p:layoutUnit>
+		<p:layoutUnit id="content_layout" position="center">
+			<ui:insert name="content" />
+		</p:layoutUnit>
+		<p:layoutUnit id="footer_layout" position="south" size="40"
+			style="text-align:center;" styleClass="layout-overflow-hidden">
+			<h:panelGroup layout="block" style="margin-top:10px">
+				<h:panelGroup layout="block"
+					style="width:30%;position:absolute;text-align:left;left:0px">
+					<h:outputText value="Display properly on "
+						style="position: relative;top: -11px;" />
+					<a href="https://www.google.com/intl/en/chrome/browser"
+						target="_blank"> <p:graphicImage library="image"
+							name="Google-Chrome-icon.png"
+							style="position: relative; top: -5px;" />
+					</a>
+					<h:outputText value="and" style="position: relative;top: -11px;" />
+					<a href="http://www.mozilla.org/en-US/firefox/new" target="_blank">
+						<p:graphicImage library="image" name="Firefox-icon.png"
+							style="position: relative; top: -5px;" />
+					</a>
+				</h:panelGroup>
+				<h:panelGroup layout="block"
+					style="width:30%;position:absolute;text-align:right;right:0px">
+					<h:outputText value="Version 1.0 Build 0001" />
+				</h:panelGroup>
+				<h:outputText
+					value="© Copyrights reserved 2013. Developed by ID.IT."
+					style="font-weight:bold" />
+			</h:panelGroup>
+		</p:layoutUnit>
+	</p:layout>
+</body>
+</html>

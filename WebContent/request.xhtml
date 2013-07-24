@@ -1,0 +1,1011 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<h:head>
+
+</h:head>
+<body>
+	<ui:composition template="mainlayout.xhtml">
+		<ui:define name="content">
+			<pe:blockUI widgetVar="blockUI" target="inputdialog">
+				<h:panelGrid columns="2">
+					<p:graphicImage library="image" name="loading.gif"
+						style="width:50px;height:50px" />
+					<h:outputText value="Saving...." style="font-size:25px" />
+				</h:panelGrid>
+			</pe:blockUI>
+			<h:form id="tableform">
+				<p:dataTable value="#{requestManager.requestList}" var="req"
+					id="requestlist" paginator="true" rows="10"
+					paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+					rowsPerPageTemplate="5,10,15,20" widgetVar="requesttable"
+					filteredValue="#{requestManager.filtered}"
+					styleClass="custom-filter"
+					currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+					<p:column filterMatchMode="contains" filterBy="#{req.title}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterMatchMode="contains"
+						filterBy="#{req.requestNumber}" filterStyle="display:none"
+						style="display:none" />
+					<p:column filterMatchMode="contains" filterBy="#{req.systemName}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterMatchMode="contains" filterBy="#{req.requester}"
+						filterStyle="display:none" style="display:none" />
+					<p:column filterBy="#{req.status}"
+						filterOptions="#{requestManager.filterOptions}"
+						filterMatchMode="exact">
+						<f:facet name="header">
+							<h:panelGroup layout="block">
+								<div style="float: left">
+									<h:outputText value="Search" />
+									<p:watermark value="Title, Number, System, Requester"
+										for="globalFilter" />
+									<p:inputText id="globalFilter" onkeyup="requesttable.filter()"
+										style="width:200px;margin:3px 0 0 6px" />
+									<h:outputText value="Group by" style="margin-left:20px" />
+									<p:selectBooleanCheckbox value="#{requestManager.deptList}"
+										style="margin-left:130px;position:absolute;top:9px">
+										<p:ajax update="requestlist"
+											listener="#{requestManager.createRequestList()}"
+											process="@this" partialSubmit="true"
+											oncomplete="requesttable.filter()" />
+									</p:selectBooleanCheckbox>
+									<h:outputText value="Show All" style="margin-left:155px;" />
+								</div>
+								<p:commandButton value="New Request" icon="ui-icon-plus"
+									oncomplete="showRequestDialog()"
+									style="float:right;height:28px"
+									action="#{requestManager.newDialog()}" update=":inputdialog"
+									process="@this" partialSubmit="true" />
+							</h:panelGroup>
+						</f:facet>
+						<pe:tooltip value="#{req.title}" for="title"
+							atPosition="top center" myPosition="bottom center" />
+						<pe:tooltip value="#{req.systemName}" for="system"
+							atPosition="top center" myPosition="bottom center" />
+						<pe:tooltip for="progressbar" atPosition="top center"
+							myPosition="bottom center">
+							<h:panelGrid columns="2">
+								<h:outputText value="State: " style="float:right" />
+								<h:outputText value="#{req.stateType.value}" />
+								<h:outputText value="Next Role: " style="float:right" />
+								<h:outputText value="#{req.nextRole}" />
+								<h:outputText value="Action: " style="float:right" />
+								<h:outputText value="#{req.nextAction}" />
+							</h:panelGrid>
+						</pe:tooltip>
+						<div class="rowclass">
+							<p:spacer height="5" />
+							<div style="height: 35px">
+								<div style="float: left; color: #306DA1;" class="ellipsis-title">
+									<h:outputText value="#{req.status}"
+										styleClass="status-#{req.status}" />
+									<h:outputText value="#{req.title}"
+										style="font-weight:bold;font-size:18px;margin: 0 0 0 10px;"
+										id="title" />
+								</div>
+								<div style="display: none; float: left; margin: 4px 0 0 20px;"
+									class="linka">
+									<p:commandLink styleClass="ui-icon ui-icon-search"
+										title="View Details"
+										style="display:inline-block;margin-right:5px"
+										oncomplete="detailDialog.show()" update=":detaildialog"
+										process="@this" partialSubmit="true">
+										<f:setPropertyActionListener
+											target="#{requestManager.viewRequest}" value="#{req}" />
+									</p:commandLink>
+									<p:commandLink styleClass="ui-icon ui-icon-pencil"
+										title="Edit Request"
+										style="display:inline-block;margin-right:5px"
+										oncomplete="showRequestDialog()" update=":inputdialog"
+										process="@this" partialSubmit="true"
+										action="#{requestManager.editDialog()}"
+										rendered="#{req.userDirectorComment == null and req.callServiceComment == null and sessionScope.userSession.staff.STAFFCODE == req.requester.STAFFCODE}">
+										<f:setPropertyActionListener
+											target="#{requestManager.editRequest}" value="#{req}" />
+									</p:commandLink>
+									<p:commandLink styleClass="ui-icon ui-icon-trash"
+										title="Delete Request"
+										style="display:inline-block;margin-right:5px"
+										oncomplete="deleteRequestDialog.show()" process="@this"
+										partialSubmit="true"
+										rendered="#{req.userDirectorComment == null and req.callServiceComment == null  and sessionScope.userSession.staff.STAFFCODE == req.requester.STAFFCODE}">
+										<f:setPropertyActionListener
+											target="#{requestManager.editRequest}" value="#{req}" />
+									</p:commandLink>
+									<p:rating value="#{req.rating}" style="display:inline-block"
+										rendered="#{req.inspectorComment != null and req.inspectorComment.approvalType == 'ACCEPTED' and sessionScope.userSession.staff.STAFFCODE == req.requester.STAFFCODE}">
+										<p:ajax event="rate" listener="#{requestManager.onRate(req)}"
+											update="requestlist, :menuform" />
+										<p:ajax event="cancel"
+											listener="#{requestManager.onRate(req)}"
+											update="requestlist, :menuform" />
+									</p:rating>
+								</div>
+								<div style="float: right; color: #999; margin: 6px 0 0;">
+									<h:outputText value="by " />
+									<h:outputText value="#{req.requester}" style="font-weight:bold" />
+									<h:outputText value=" on " />
+									<h:outputText value="#{req.issueDate}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</div>
+							</div>
+							<p:panelGrid styleClass="transparentPanelGrid" id="grid">
+								<p:row>
+									<p:column
+										style="text-align:center;width:100px;border-left-color: transparent;border-bottom-color: transparent;">
+										<h:outputText value="Number"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.requestNumber}" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;">
+										<h:outputText value="Use Date"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.useDate}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column
+										style="text-align:center;width:150px;border-bottom-color: transparent;"
+										styleClass="ellipsis-system">
+										<h:outputText value="System"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.systemName}" id="system" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;">
+										<h:outputText value="Issue Type"
+											style="font-weight:bold;color: #999" />
+										<br />
+										<h:outputText value="#{req.issueType.value}" />
+									</p:column>
+									<p:column
+										style="text-align:center;width:100px;border-bottom-color: transparent;border-right-color: transparent;">
+										<div style="margin-bottom: 15px">
+											<h:outputText value="Progress"
+												style="font-weight:bold;color: #999" />
+											<br />
+											<p:progressBar value="#{req.progress}"
+												labelTemplate="{value}%" displayOnly="true"
+												style="position: absolute;width: 165px;height:12px;margin-top:1px"
+												id="progressbar" />
+										</div>
+									</p:column>
+								</p:row>
+							</p:panelGrid>
+							<p:spacer height="10" />
+						</div>
+					</p:column>
+				</p:dataTable>
+			</h:form>
+			<p:dialog widgetVar="newRequestDialog" showEffect="clip"
+				header="#{requestManager.dialogHeader}" hideEffect="clip"
+				resizable="false" id="inputdialog" modal="true"
+				height="#{menuManager.screenHeight lt 1000 ? '500':'700'}"
+				width="648">
+				<pe:tooltip global="true" myPosition="bottom left"
+					atPosition="top left" showEvent="focus" hideEvent="blur" />
+				<pe:tooltip value="ประเภทของปัญหา (ส่วนตัว / กอง)"
+					for=":inputform:issuetype" myPosition="bottom left"
+					atPosition="top left" />
+				<pe:tooltip value="มีการใช้งบประมาณหรือไม่"
+					for=":inputform:usebudget" myPosition="bottom left"
+					atPosition="top left" />
+				<pe:tooltip value="ประเภทของงบประมาณ (ลงทุน / ดำเนินการ)"
+					for=":inputform:budgettype" myPosition="bottom left"
+					atPosition="top left" />
+				<pe:tooltip value="เอกสารหรือไฟล์แนบ" for=":inputform:uploader"
+					myPosition="bottom left" atPosition="top left" />
+				<p:inputText
+					style="width:0px;height:0px;border:none;position:absolute;box-shadow:none" />
+				<h:form enctype="multipart/form-data" id="inputform"
+					style="font-size:95% !important">
+					<h:panelGroup layout="block" id="newrequestdialogcontainer">
+						<p:fieldset legend="Header">
+							<p:panelGrid styleClass="panelgridNoBorder"
+								style="font-size:100% !important">
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Title " />
+									</p:column>
+									<p:column>
+										<p:inputText style="width:400px"
+											value="#{requestManager.editRequest.title}"
+											title="ชื่อเรื่องในส่วนของการแจ้งความต้องการ" />
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Ref. Document" />
+									</p:column>
+									<p:column>
+										<p:inputText style="width:400px"
+											value="#{requestManager.editRequest.referenceDocument}"
+											title="อ้างอิงถึงเรืองที่เกี่ยวเนื่อง / เชื่อมโยง / สัมพันธ์กัน" />
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Use Date" />
+									</p:column>
+									<p:column>
+										<p:calendar showOn="button"
+											value="#{requestManager.editRequest.useDate}"
+											pattern="dd/MM/yyyy" title="วันที่ต้องการใช้งาน" />
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Issue Type" />
+									</p:column>
+									<p:column>
+										<p:selectOneButton style="font-size:95% !important"
+											converter="issueTypeConverter"
+											value="#{requestManager.editRequest.issueType}"
+											id="issuetype">
+											<f:selectItems value="#{requestManager.issueTypes}" />
+										</p:selectOneButton>
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Phone" />
+									</p:column>
+									<p:column>
+										<p:inputText size="4"
+											value="#{requestManager.editRequest.phoneNumber}"
+											title="เบอร์โทรศัพท์ของผู้แจ้ง" />
+									</p:column>
+								</p:row>
+							</p:panelGrid>
+						</p:fieldset>
+						<p:spacer height="10" />
+						<p:fieldset legend="Details">
+							<p:panelGrid styleClass="panelgridNoBorder"
+								style="font-size:100% !important">
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="System" />
+									</p:column>
+									<p:column>
+										<p:inputText value="#{requestManager.editRequest.systemName}"
+											style="width:400px" title="ชื่อของระบบที่ต้องการแจ้งปัญหา" />
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column
+										style="width:150px;text-align:right;vertical-align:text-top;">
+										<h:outputText value="Purpose" />
+									</p:column>
+									<p:column>
+										<p:inputTextarea style="width:400px" rows="6"
+											autoResize="false"
+											value="#{requestManager.editRequest.purpose}"
+											title="เหตุผลและความจำเป็น" />
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column
+										style="width:150px;text-align:right;vertical-align:text-top;">
+										<h:outputText value="Description" />
+									</p:column>
+									<p:column>
+										<p:inputTextarea style="width:400px" rows="6"
+											autoResize="false"
+											value="#{requestManager.editRequest.description}"
+											title="รายละเอียดของปัญหา" />
+									</p:column>
+								</p:row>
+							</p:panelGrid>
+						</p:fieldset>
+						<p:spacer height="10" />
+						<p:fieldset legend="Budget">
+							<p:panelGrid styleClass="panelgridNoBorder" id="budgetpanelgrid"
+								style="font-size:100% !important">
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Use Budget" />
+									</p:column>
+									<p:column>
+										<p:selectBooleanCheckbox
+											value="#{requestManager.editRequest.budget}" id="usebudget">
+											<!--  <p:ajax update="budgetpanelgrid" process="@this"
+												partialSubmit="true"  />-->
+										</p:selectBooleanCheckbox>
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Budget Type" />
+									</p:column>
+									<p:column>
+										<p:selectOneButton style="font-size:95% !important"
+											converter="budgetTypeConverter"
+											value="#{requestManager.editRequest.budgetType}"
+											id="budgettype">
+											<f:selectItems value="#{requestManager.budgetTypes}" />
+										</p:selectOneButton>
+									</p:column>
+								</p:row>
+								<p:row>
+									<p:column style="width:150px;text-align:right">
+										<h:outputText value="Amount" />
+									</p:column>
+									<p:column>
+										<p:inputText value="#{requestManager.editRequest.budgetUse}"
+											title="จำนวนงบประมาณที่ใช้" />
+									</p:column>
+								</p:row>
+							</p:panelGrid>
+						</p:fieldset>
+						<p:spacer height="15" />
+						<p:fieldset legend="Attachment">
+							<h:panelGroup id="filelist" layout="block">
+								<p:dataList value="#{requestManager.attachments}" var="file"
+									itemType="none"
+									rendered="#{fn:length(requestManager.attachments) != 0}">
+									<div style="width: 100%; height: 20px;"
+										class="download rowclass">
+										<div class="linka"
+											style="display: none; margin-right: 15px; float: right;">
+											<p:commandLink styleClass="ui-icon ui-icon-circle-close"
+												style="display:inline-block;margin-top: 2px;"
+												title="Delete File"
+												action="#{requestManager.deleteFile(file)}"
+												update=":inputform:filelist" process="@this"
+												partialSubmit="true" />
+										</div>
+
+										<h:graphicImage library="image" name="pdf.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{fn:containsIgnoreCase(file.physicalName, '.pdf')}" />
+										<h:graphicImage library="image" name="doc.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{(fn:containsIgnoreCase(file.physicalName, '.doc') || fn:containsIgnoreCase(file.physicalName, '.docx'))}" />
+										<h:graphicImage library="image" name="ppt.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{(fn:containsIgnoreCase(file.physicalName, '.ppt') || fn:containsIgnoreCase(file.physicalName, '.pptx'))}" />
+										<h:graphicImage library="image" name="xls.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{(fn:containsIgnoreCase(file.physicalName, '.xls') || fn:containsIgnoreCase(file.physicalName, '.xlsx'))}" />
+										<h:graphicImage library="image" name="img.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{(fn:containsIgnoreCase(file.physicalName, '.jpg') || fn:containsIgnoreCase(file.physicalName, '.tiff') || fn:containsIgnoreCase(file.physicalName, '.gif') || fn:containsIgnoreCase(file.physicalName, '.bmp') || fn:containsIgnoreCase(file.physicalName, '.png'))}" />
+										<h:graphicImage library="image" name="text.png"
+											style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+											rendered="#{!fn:containsIgnoreCase(file.physicalName, '.pdf') and !fn:containsIgnoreCase(file.physicalName, '.doc') and !fn:containsIgnoreCase(file.physicalName, '.docx') and !fn:containsIgnoreCase(file.physicalName, '.xls') and !fn:containsIgnoreCase(file.physicalName, '.xlsx') and !fn:containsIgnoreCase(file.physicalName, '.ppt') and !fn:containsIgnoreCase(file.physicalName, '.pptx') and !fn:containsIgnoreCase(file.physicalName, '.jpg') and !fn:containsIgnoreCase(file.physicalName, '.tiff') and !fn:containsIgnoreCase(file.physicalName, '.gif') and !fn:containsIgnoreCase(file.physicalName, '.bmp') and !fn:containsIgnoreCase(file.physicalName, '.png')}" />
+										<h:outputText value="#{file.physicalName}" />
+									</div>
+								</p:dataList>
+							</h:panelGroup>
+							<p:fileUpload mode="advanced" multiple="true"
+								fileUploadListener="#{requestManager.handleFIle()}"
+								update=":inputform:filelist" showButtons="false" auto="true"
+								id="uploader" />
+						</p:fieldset>
+						<p:spacer height="15" />
+						<h:panelGroup layout="block" style="width:100%">
+							<center>
+								<p:commandButton value="Submit" icon="ui-icon-disk"
+									action="#{requestManager.saveRequest}"
+									process="newrequestdialogcontainer, @this" partialSubmit="true"
+									update=":tableform:requestlist, newrequestdialogcontainer"
+									styleClass="scrolltoclass" onstart="blockUI.block()" />
+							</center>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+			<p:dialog widgetVar="detailDialog"
+				height="#{menuManager.screenHeight lt 1000 ? '500':'700'}"
+				showEffect="clip" hideEffect="clip" resizable="false" modal="true"
+				appendToBody="true" id="detaildialog">
+				<f:facet name="header">
+					<h:outputText
+						value="Request ##{requestManager.viewRequest.requestNumber}" />
+					<h:panelGroup layout="block"
+						style="position:absolute;right:50px;top:23px"
+						rendered="#{requestManager.viewRequest.rating gt 0}">
+						<h:outputText value="User Rating"
+							style="font-size:15px;margin-right: 10px" />
+						<p:rating readonly="true"
+							value="#{requestManager.viewRequest.rating}"
+							style="display:inline-block;margin-bottom:-2px" />
+					</h:panelGroup>
+				</f:facet>
+				<p:tabView id="detailtab" style="font-size:110% !important">
+					<p:tab title="Details" titleStyle="font-size:80% !important">
+						<p:panel header="Request">
+							<p:fieldset legend="Header">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Number" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.requestNumber}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Title" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.title}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Ref. Document" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.referenceDocument}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Use Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.useDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.issueType.value}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Requester" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.requester}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Department" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.requester.employee.DEPFINANCE}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Phone" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.phoneNumber}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Details">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="System" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.systemName}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column
+											style="width:150px;text-align:right;vertical-align:text-top">
+											<h:outputText value="Purpose" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.purpose}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column
+											style="width:150px;text-align:right;vertical-align:text-top">
+											<h:outputText value="Description" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.description}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Budget">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Use Budget" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="Yes"
+												rendered="#{requestManager.viewRequest.budget}"
+												style="color:green" />
+											<h:outputText value="No"
+												rendered="#{!requestManager.viewRequest.budget}"
+												style="color:red" />
+										</p:column>
+									</p:row>
+									<p:row rendered="#{requestManager.viewRequest.budget}">
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Budget Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.budgetType.value}" />
+										</p:column>
+									</p:row>
+									<p:row rendered="#{requestManager.viewRequest.budget}">
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Amount" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText value="#{requestManager.viewRequest.budgetUse}">
+												<f:convertNumber pattern="#,###" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="10" />
+							<p:fieldset legend="Attachments"
+								rendered="#{fn:length(requestManager.viewRequest.attachments) != 0}">
+								<h:form>
+									<h:panelGroup style="font-size:105% !important" layout="block">
+										<p:dataList
+											value="#{requestManager.viewRequest.attachmentList}"
+											var="file" itemType="none">
+											<div style="width: 100%; height: 20px;" class="download">
+												<h:graphicImage library="image" name="pdf.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{fn:containsIgnoreCase(file.physicalName, '.pdf')}" />
+												<h:graphicImage library="image" name="doc.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.doc') || fn:containsIgnoreCase(file.physicalName, '.docx'))}" />
+												<h:graphicImage library="image" name="ppt.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.ppt') || fn:containsIgnoreCase(file.physicalName, '.pptx'))}" />
+												<h:graphicImage library="image" name="xls.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.xls') || fn:containsIgnoreCase(file.physicalName, '.xlsx'))}" />
+												<h:graphicImage library="image" name="img.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{(fn:containsIgnoreCase(file.physicalName, '.jpg') || fn:containsIgnoreCase(file.physicalName, '.tiff') || fn:containsIgnoreCase(file.physicalName, '.gif') || fn:containsIgnoreCase(file.physicalName, '.bmp') || fn:containsIgnoreCase(file.physicalName, '.png'))}" />
+												<h:graphicImage library="image" name="text.png"
+													style="margin-right:3px;height:16px;width:16px;margin-bottom:-2px"
+													rendered="#{!fn:containsIgnoreCase(file.physicalName, '.pdf') and !fn:containsIgnoreCase(file.physicalName, '.doc') and !fn:containsIgnoreCase(file.physicalName, '.docx') and !fn:containsIgnoreCase(file.physicalName, '.xls') and !fn:containsIgnoreCase(file.physicalName, '.xlsx') and !fn:containsIgnoreCase(file.physicalName, '.ppt') and !fn:containsIgnoreCase(file.physicalName, '.pptx') and !fn:containsIgnoreCase(file.physicalName, '.jpg') and !fn:containsIgnoreCase(file.physicalName, '.tiff') and !fn:containsIgnoreCase(file.physicalName, '.gif') and !fn:containsIgnoreCase(file.physicalName, '.bmp') and !fn:containsIgnoreCase(file.physicalName, '.png')}" />
+												<p:commandLink action="#{download.download(file)}"
+													value="#{file.physicalName}" process="@this"
+													style="text-decoration:none" ajax="false" />
+											</div>
+										</p:dataList>
+									</h:panelGroup>
+								</h:form>
+							</p:fieldset>
+						</p:panel>
+						<p:spacer height="15" />
+						<p:panel header="Approval"
+							rendered="#{requestManager.viewRequest.userDirectorComment != null or requestManager.viewRequest.providerDirectorComment != null or requestManager.viewRequest.inspectorComment != null}">
+							<p:fieldset legend="User Director"
+								rendered="#{requestManager.viewRequest.userDirectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important"
+									rendered="#{requestManager.viewRequest.userDirectorComment != null}">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approver" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.userDirectorComment.director}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.userDirectorComment.approvalType.value}"
+												style="color:#{requestManager.viewRequest.userDirectorComment.approvalType == 'APPROVED' ? 'green':requestManager.viewRequest.userDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.userDirectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.userDirectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15"
+								rendered="#{requestManager.viewRequest.providerDirectorComment != null}" />
+							<p:fieldset legend="Provider Director"
+								rendered="#{requestManager.viewRequest.providerDirectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approver" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.providerDirectorComment.director}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.providerDirectorComment.approvalType.value}"
+												style="color:#{requestManager.viewRequest.providerDirectorComment.approvalType == 'APPROVED' ? 'green':requestManager.viewRequest.providerDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.providerDirectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.providerDirectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15"
+								rendered="#{requestManager.viewRequest.inspectorComment != null}" />
+							<p:fieldset legend="Inspector"
+								rendered="#{requestManager.viewRequest.inspectorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Inspector" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.inspectorComment.inspector}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Approval" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.inspectorComment.approvalType.value}"
+												style="color:#{requestManager.viewRequest.providerDirectorComment.approvalType == 'APPROVED' ? 'green':requestManager.viewRequest.providerDirectorComment.approvalType == 'ACCEPTED' ? 'green':'red'}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.inspectorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.inspectorComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+						</p:panel>
+						<p:spacer height="15" />
+						<p:panel header="Operational"
+							rendered="#{requestManager.viewRequest.callServiceComment != null or requestManager.viewRequest.projectManagerComment != null or requestManager.viewRequest.operatorComment != null}">
+							<p:fieldset legend="Call Service"
+								rendered="#{requestManager.viewRequest.callServiceComment != null}">
+								<p:panelGrid style="font-size:100% !important"
+									rendered="#{requestManager.viewRequest.callServiceComment != null}"
+									styleClass="panelgridPadding">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Call Service" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.serviceOfficer}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Coordinator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.coordinator}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Phone" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.phoneNumber}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Jobs" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.jobsAsString}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Work Place" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.workPlace.name}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.callServiceComment.remark}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15" />
+							<p:fieldset legend="Project Manager"
+								rendered="#{requestManager.viewRequest.projectManagerComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important"
+									rendered="#{requestManager.viewRequest.projectManagerComment != null}">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Project Manager" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.manager}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.operatorAsString}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Project Type" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.projectType.value}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operation Time" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.startDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+											<h:outputText value=" - " />
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.endDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+											<h:outputText value=" (" />
+											<h:outputText
+												value="#{((requestManager.viewRequest.projectManagerComment.endDate.time - requestManager.viewRequest.projectManagerComment.startDate.time)/86400000)+1}">
+												<f:convertNumber pattern="#,###" />
+											</h:outputText>
+											<h:outputText
+												value=" #{((requestManager.viewRequest.projectManagerComment.endDate.time - requestManager.viewRequest.projectManagerComment.startDate.time)/86400000)+1 gt 1 ? 'Days':'Day'})" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Remark" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.projectManagerComment.commentBefore}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+							<p:spacer height="15" />
+							<p:fieldset legend="Operator"
+								rendered="#{requestManager.viewRequest.operatorComment != null}">
+								<p:panelGrid styleClass="panelgridPadding"
+									style="font-size:100% !important">
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operator" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.operatorComment.operator}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Issue Date" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.operatorComment.issueDate}">
+												<f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+7" />
+											</h:outputText>
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Operation Detail" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.operatorComment.remark}" />
+										</p:column>
+									</p:row>
+									<p:row>
+										<p:column style="width:150px;text-align:right">
+											<h:outputText value="Problems / Obstacles" />
+										</p:column>
+										<p:column style="width:450px">
+											<h:outputText
+												value="#{requestManager.viewRequest.operatorComment.problems}" />
+										</p:column>
+									</p:row>
+								</p:panelGrid>
+							</p:fieldset>
+						</p:panel>
+					</p:tab>
+					<p:tab title="Logs" titleStyle="font-size:80% !important">
+						<h:panelGroup layout="block" style="font-size:90% !important">
+							<p:dataTable value="#{requestManager.viewRequest.logList}"
+								var="logs" style="width:686px" rows="10"
+								paginatorPosition="bottom" paginator="true"
+								paginatorAlwaysVisible="false"
+								paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+								rowsPerPageTemplate="5,10,15,20"
+								currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+								<p:column headerText="Actor">
+									<h:outputText value="#{logs.actor}" />
+								</p:column>
+								<p:column headerText="Role">
+									<h:outputText value="#{logs.role.value}" />
+								</p:column>
+								<p:column headerText="Description">
+									<h:outputText value="#{logs.description}" />
+								</p:column>
+								<p:column headerText="Issue Time">
+									<h:outputText value="#{logs.issueTime}">
+										<f:convertDateTime pattern="dd/MM/yyyy hh:mm" timeZone="GMT+7" />
+									</h:outputText>
+								</p:column>
+							</p:dataTable>
+						</h:panelGroup>
+					</p:tab>
+				</p:tabView>
+			</p:dialog>
+			<p:confirmDialog header="Delete Request"
+				widgetVar="deleteRequestDialog" appendToBody="true"
+				showEffect="clip" hideEffect="clip"
+				message="This request will be deleted, do you want to proceed ?">
+				<p:commandButton value="Yes" icon="ui-icon-check"
+					action="#{requestManager.deleteRequest()}" process="@this"
+					partialSubmit="true" update=":tableform:requestlist"
+					oncomplete="deleteRequestDialog.hide()" />
+				<p:commandButton value="No" icon="ui-icon-close" type="button"
+					onclick="deleteRequestDialog.hide()" />
+			</p:confirmDialog>
+		</ui:define>
+	</ui:composition>
+</body>
+</html>

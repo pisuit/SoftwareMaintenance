@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:func="customfunction.callservice">
+
+<h:head></h:head>
+<body>
+	<ui:composition template="mainlayout.xhtml">
+		<ui:define name="content">
+			<p:tabView id="admintab">
+				<p:tab title="User" id="usertab">
+					<h:form id="usertableform">
+						<p:dataTable value="#{adminManager.userList}" var="user" rows="10"
+							id="userlist" style="font-size:100% !important"
+							paginatorPosition="bottom" paginator="true"
+							paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+							rowsPerPageTemplate="5,10,15,20"
+							currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="text-align:right">
+									<p:commandButton value="New User" icon="ui-icon-plus"
+										oncomplete="newUserDialog.show()" update=":newuserdialog"
+										process="@this" partialSubmit="true"
+										action="#{adminManager.resetUserData()}" />
+								</h:panelGroup>
+							</f:facet>
+							<p:column headerText="Name">
+								<div class="rowclass">
+									<h:outputText value="#{user.staff}"/>
+									<div style="display: none; float: right;" class="linka">
+										<p:commandLink styleClass="ui-icon ui-icon-pencil"
+											style="display:inline-block;margin-right:5px"
+											title="Edit User" action="#{adminManager.setUserData()}"
+											oncomplete="newUserDialog.show()" process="@this"
+											partialSubmit="true" update=":newuserdialog">
+											<f:setPropertyActionListener
+												target="#{adminManager.editUser}" value="#{user}" />
+										</p:commandLink>
+										<p:commandLink styleClass="ui-icon ui-icon-trash"
+											style="display:inline-block" title="Delete User"
+											oncomplete="deleteUserDialog.show()" process="@this"
+											partialSubmit="true">
+											<f:setPropertyActionListener
+												target="#{adminManager.editUser}" value="#{user}" />
+										</p:commandLink>
+									</div>
+								</div>
+							</p:column>
+							<p:column headerText="Department" style=";width:100px">
+								<h:outputText value="#{user.staff.employee.DEPFINANCE}"
+									rendered="#{user.staff.employee.DEPFINANCE != 'ฝจ.'}" />
+								<h:outputText value="#{user.staff.employee.DEPPERSON}"
+									rendered="#{user.staff.employee.DEPFINANCE == 'ฝจ.'}" />
+							</p:column>
+							<p:column headerText="UD" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'USER_DIRECTOR')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'USER_DIRECTOR')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="PD" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'PROVIDER_DIRECTOR')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'PROVIDER_DIRECTOR')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="CS" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'CALL_SERVICE')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'CALL_SERVICE')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="PM" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'PROJECT_MANAGER')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'PROJECT_MANAGER')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="OP" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'OPERATOR')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'OPERATOR')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="IP" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'INSPECTOR')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'INSPECTOR')}"
+									style="width:16px;height:16px" />
+							</p:column>
+							<p:column headerText="AD" style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{func:containAuthorize(user.roles, 'ADMIN')}"
+									style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!func:containAuthorize(user.roles, 'ADMIN')}"
+									style="width:16px;height:16px" />
+							</p:column>
+						</p:dataTable>
+					</h:form>
+				</p:tab>
+				<p:tab title="Job">
+					<h:form id="jobtableform">
+						<p:dataTable value="#{adminManager.jobList}" var="job" rows="10"
+							id="joblist" style="font-size:100% !important"
+							paginatorPosition="bottom" paginator="true"
+							paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+							rowsPerPageTemplate="5,10,15,20"
+							currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="text-align:right">
+									<p:commandButton value="New Job" icon="ui-icon-plus"
+										oncomplete="newJobDialog.show()" update=":newjobdialog"
+										process="@this" partialSubmit="true"
+										action="#{adminManager.resetJobData()}" />
+								</h:panelGroup>
+							</f:facet>
+							<p:column headerText="Job Name">
+								<div class="rowclass">
+									<h:outputText value="#{job.jobName}" />
+									<div style="float: right; display: none" class="linka">
+										<p:commandLink styleClass="ui-icon ui-icon-pencil"
+											style="display:inline-block;margin-right:5px"
+											title="Edit Job" oncomplete="newJobDialog.show()"
+											process="@this" partialSubmit="true" update=":newjobdialog"
+											action="#{adminManager.setJobData()}">
+											<f:setPropertyActionListener target="#{adminManager.editJob}"
+												value="#{job}" />
+										</p:commandLink>
+										<p:commandLink styleClass="ui-icon ui-icon-trash"
+											style="display:inline-block" title="Delete Job"
+											oncomplete="deleteJobDialog.show()" process="@this"
+											partialSubmit="true">
+											<f:setPropertyActionListener target="#{adminManager.editJob}"
+												value="#{job}" />
+										</p:commandLink>
+									</div>
+								</div>
+							</p:column>
+							<p:column headerText="Department" style="width:100px">
+								<h:outputText value="#{job.department}" />
+							</p:column>
+							<p:column headerText="Internal"
+								style="text-align:center;width:50px">
+								<h:graphicImage library="image" name="check.png"
+									rendered="#{job.internal}" style="width:16px;height:16px" />
+								<h:graphicImage library="image" name="cross.png"
+									rendered="#{!job.internal}" style="width:16px;height:16px" />
+							</p:column>
+						</p:dataTable>
+					</h:form>
+				</p:tab>
+				<p:tab title="Work Place">
+					<h:form id="worktableform">
+						<p:dataTable value="#{adminManager.workPlaceList}" var="work"
+							rows="10" id="worklist" style="font-size:100% !important"
+							paginatorPosition="bottom" paginator="true"
+							paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} Rows / Page"
+							rowsPerPageTemplate="5,10,15,20"
+							currentPageReportTemplate="Results: ({startRecord} - {endRecord}) / {totalRecords} | Pages: {currentPage} / {totalPages}">
+							<f:facet name="header">
+								<h:panelGroup layout="block" style="text-align:right">
+									<p:commandButton value="New Work Place" icon="ui-icon-plus"
+										oncomplete="newWorkDialog.show()" update=":newworkdialog"
+										process="@this" partialSubmit="true"
+										action="#{adminManager.resetWorkPlaceData()}" />
+								</h:panelGroup>
+							</f:facet>
+							<p:column headerText="Work Place">
+								<div class="rowclass">
+									<h:outputText value="#{work.name}" />
+									<div style="float: right; display: none" class="linka">
+										<p:commandLink styleClass="ui-icon ui-icon-pencil"
+											style="display:inline-block;margin-right:5px"
+											title="Edit Work Place" oncomplete="newWorkDialog.show()"
+											process="@this" partialSubmit="true" update=":newworkdialog"
+											action="#{adminManager.setWorkPlaceData()}">
+											<f:setPropertyActionListener
+												target="#{adminManager.editWorkPlace}" value="#{work}" />
+										</p:commandLink>
+										<p:commandLink styleClass="ui-icon ui-icon-trash"
+											style="display:inline-block" title="Delete Work Place"
+											oncomplete="deleteWorkDialog.show()" process="@this"
+											partialSubmit="true">
+											<f:setPropertyActionListener
+												target="#{adminManager.editWorkPlace}" value="#{work}" />
+										</p:commandLink>
+									</div>
+								</div>
+							</p:column>
+						</p:dataTable>
+					</h:form>
+				</p:tab>
+			</p:tabView>
+			<p:dialog header="#{adminManager.userDialogHeader}"
+				appendToBody="true" widgetVar="newUserDialog" id="newuserdialog"
+				showEffect="clip" hideEffect="clip" resizable="false" modal="true">
+				<p:inputText
+					style="width:0px;height:0px;border:none;position:absolute;box-shadow:none" />
+				<h:form id="newuserform">
+					<p:fieldset legend="Details">
+						<p:panelGrid id="newuserpanelgrid" styleClass="panelgridNoBorder"
+							style="font-size:100% !important">
+							<p:row>
+								<p:column style="width:100px;text-align:right">
+									<h:outputText value="User" />
+								</p:column>
+								<p:column>
+									<p:autoComplete value="#{adminManager.editUser.staff}"
+										completeMethod="#{empAutoComplete.employeeCompleteMethod()}"
+										process="@this" var="emp" itemValue="#{emp}"
+										itemLabel="#{emp}" converter="employeeConverter"
+										forceSelection="true" scrollHeight="210" minQueryLength="3"
+										size="50">
+										<p:column>
+											<h:graphicImage value="/photo/#{emp.STAFFCODE}" width="50"
+												height="60" />
+										</p:column>
+										<p:column style="font-weight:bold;font-size:90%">
+											<h:outputText value="ชื่อ: #{emp}" />
+											<br />
+											<h:outputText
+												value="สังกัด: #{emp.employeeAsList.get(0).DEPFINANCE}" />
+										</p:column>
+									</p:autoComplete>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column
+									style="width:100px;text-align:right;vertical-align:top">
+									<h:outputText value="Role" />
+								</p:column>
+								<p:column>
+									<p:selectManyCheckbox value="#{adminManager.selectedRoleList}"
+										converter="userRoleConverter" layout="pageDirection">
+										<f:selectItems value="#{adminManager.userRoleList}" var="role"
+											itemLabel="#{role.value}" itemValue="#{role}" />
+									</p:selectManyCheckbox>
+								</p:column>
+							</p:row>
+						</p:panelGrid>
+					</p:fieldset>
+					<p:spacer height="15" />
+					<h:panelGroup layout="block" style="width:100%">
+						<center>
+							<p:commandButton value="Submit" icon="ui-icon-disk"
+								update=":admintab:usertableform:userlist, newuserpanelgrid"
+								action="#{adminManager.saveUser()}"
+								process="@this, newuserpanelgrid" partialSubmit="true" />
+						</center>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+			<p:dialog header="#{adminManager.jobDialogHeader}"
+				appendToBody="true" widgetVar="newJobDialog" id="newjobdialog"
+				showEffect="clip" hideEffect="clip" resizable="false" modal="true">
+				<p:inputText
+					style="width:0px;height:0px;border:none;position:absolute;box-shadow:none" />
+				<h:form id="newjobform">
+					<p:fieldset legend="Details">
+						<p:panelGrid id="newjobpanelgrid" styleClass="panelgridNoBorder"
+							style="font-size:100% !important">
+							<p:row>
+								<p:column style="width:100px;text-align:right">
+									<h:outputText value="Job Name" />
+								</p:column>
+								<p:column>
+									<p:inputText style="width:400px"
+										value="#{adminManager.editJob.jobName}" />
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column style="width:100px;text-align:right">
+									<h:outputText value="Department" />
+								</p:column>
+								<p:column>
+									<p:selectOneMenu value="#{adminManager.editJob.department}"
+										filter="true" filterMatchMode="contains">
+										<f:selectItems value="#{adminManager.deptSelectItemList}" />
+									</p:selectOneMenu>
+								</p:column>
+							</p:row>
+							<p:row>
+								<p:column style="width:100px;text-align:right">
+									<h:outputText value="Internal" />
+								</p:column>
+								<p:column>
+									<p:selectBooleanCheckbox
+										value="#{adminManager.editJob.internal}" />
+								</p:column>
+							</p:row>
+						</p:panelGrid>
+					</p:fieldset>
+					<p:spacer height="15" />
+					<h:panelGroup layout="block" style="width:100%">
+						<center>
+							<p:commandButton value="Submit" icon="ui-icon-disk"
+								update=":admintab:jobtableform:joblist, newjobpanelgrid"
+								action="#{adminManager.saveJob()}"
+								process="@this, newjobpanelgrid" partialSubmit="true" />
+						</center>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+			<p:dialog header="#{adminManager.workPlaceDialogHeader}"
+				appendToBody="true" widgetVar="newWorkDialog" id="newworkdialog"
+				showEffect="clip" hideEffect="clip" resizable="false" modal="true">
+				<p:inputText
+					style="width:0px;height:0px;border:none;position:absolute;box-shadow:none" />
+				<h:form id="newworkform">
+					<p:fieldset legend="Details">
+						<p:panelGrid id="newworkpanelgrid" styleClass="panelgridNoBorder"
+							style="font-size:100% !important">
+							<p:row>
+								<p:column style="width:100px;text-align:right">
+									<h:outputText value="Work Place" />
+								</p:column>
+								<p:column>
+									<p:inputText style="width:400px"
+										value="#{adminManager.editWorkPlace.name}" />
+								</p:column>
+							</p:row>
+						</p:panelGrid>
+					</p:fieldset>
+					<p:spacer height="15" />
+					<h:panelGroup layout="block" style="width:100%">
+						<center>
+							<p:commandButton value="Submit" icon="ui-icon-disk"
+								update=":admintab:worktableform:worklist, newworkpanelgrid"
+								action="#{adminManager.saveWorkPlace()}"
+								process="@this, newworkpanelgrid" partialSubmit="true" />
+						</center>
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+			<p:confirmDialog header="Delete User" widgetVar="deleteUserDialog"
+				appendToBody="true" showEffect="clip" hideEffect="clip"
+				message="This user will be deleted, do you want to proceed ?">
+				<p:commandButton value="Yes" icon="ui-icon-check"
+					action="#{adminManager.deleteUser()}" process="@this"
+					partialSubmit="true" update=":admintab:usertableform:userlist"
+					oncomplete="deleteUserDialog.hide()" />
+				<p:commandButton value="No" icon="ui-icon-close" type="button"
+					onclick="deleteUserDialog.hide()" />
+			</p:confirmDialog>
+			<p:confirmDialog header="Delete Job" widgetVar="deleteJobDialog"
+				appendToBody="true" showEffect="clip" hideEffect="clip"
+				message="This job will be deleted, do you want to proceed ?">
+				<p:commandButton value="Yes" icon="ui-icon-check"
+					action="#{adminManager.deleteJob()}" process="@this"
+					partialSubmit="true" update=":admintab:jobtableform:joblist"
+					oncomplete="deleteJobDialog.hide()" />
+				<p:commandButton value="No" icon="ui-icon-close" type="button"
+					onclick="deleteJobDialog.hide()" />
+			</p:confirmDialog>
+			<p:confirmDialog header="Delete Work Place"
+				widgetVar="deleteWorkDialog" appendToBody="true" showEffect="clip"
+				hideEffect="clip"
+				message="This work place will be deleted, do you want to proceed ?">
+				<p:commandButton value="Yes" icon="ui-icon-check"
+					action="#{adminManager.deleteWorkPlace()}" process="@this"
+					partialSubmit="true" update=":admintab:worktableform:worklist"
+					oncomplete="deleteWorkDialog.hide()" />
+				<p:commandButton value="No" icon="ui-icon-close" type="button"
+					onclick="deleteWorkDialog.hide()" />
+			</p:confirmDialog>
+		</ui:define>
+	</ui:composition>
+</body>
+</html>

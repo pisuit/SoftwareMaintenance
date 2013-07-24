@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="TIS-620"?>
+<jboss-web>
+     <context-root>/itservice</context-root>
+      <!-- <virtual-host>myvirtualhost</virtual-host> -->
+</jboss-web>
